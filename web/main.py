@@ -22,4 +22,4 @@ socketio_ref = SocketIO(app)
 import socket_comm
 
 if __name__ == '__main__':
-    socketio_ref.run(app=app)
+    socketio_ref.run(app=app, port=14102)
