@@ -1,0 +1,13 @@
+# Server / Flask
+flask
+flask-socketio
+python-engineio
+eventlet
+Jinja2
+
+# Client
+python-socketio
+socketio
+aiohttp
+requests
+websocket-client
