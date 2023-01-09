@@ -42,19 +42,18 @@ jobs:
 
           ## Getting version info from Git Tag
           HASH=$(git rev-parse HEAD)
-          echo "${MAJOR_MINOR_VERSION}.*"
           git tag -l ${MAJOR_MINOR_VERSION}.*
-          version_git_tag=$(git tag -l ${MAJOR_MINOR_VERSION}.*)
-          echo "version found in github ${version_git_tag}"
-          if [ -z "${version_git_tag}" ]; then
+          VERSION_GIT_TAG=$(git tag -l ${MAJOR_MINOR_VERSION}.*)
+          echo "version found in github ${VERSION_GIT_TAG}"
+          if [ -z "${VERSION_GIT_TAG}" ]; then
               echo "Major and minor version not found in Git. Creating new version tag..."
               VERSION=${MAJOR_MINOR_VERSION}.${DEFAULT_BUILD_VERSION}
           else
-              echo "Version found in Git: ${version_git_tag}"
+              echo "Version found in Git: ${VERSION_GIT_TAG}"
               re="[0-9]+\.[0-9]+\.([0-9]+)"
-              [[ $version_git_tag =~ $re ]]
-              build=$((BASH_REMATCH[1]+1))
-              VERSION=${MAJOR_MINOR_VERSION}.${build}
+              [[ $VERSION_GIT_TAG =~ $re ]]
+              BUILD=$((BASH_REMATCH[1]+1))
+              VERSION=${MAJOR_MINOR_VERSION}.${BUILD}
           fi
           echo "Setting version to ${VERSION} with hash ${HASH}"
 
