@@ -19,6 +19,7 @@ jobs:
 
       - name: Generate new version
         shell: bash
+        continue-on-error: true
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
