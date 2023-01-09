@@ -59,14 +59,9 @@ jobs:
           echo ${BOT_TOKEN:0:4}
           curl --silent --request POST \
             --header "Accept: application/vnd.github+json" \
-            --header 'Authorization: Bearer ${BOT_TOKEN}' \
+            --header "Authorization: Bearer ${BOT_TOKEN}" \
             --header "X-GitHub-Api-Version: 2022-11-28" \
-            --data '{"tag_name": "${VERSION}",
-                          "target_commitish": "master",
-                          "name": "${VERSION}",
-                          "body": "Release of version ${VERSION}",
-                          "draft": false,
-                          "prerelease": false}' \
+            --data '{"tag_name": "${VERSION}", "target_commitish": "master", "name": "${VERSION}", "body": "Release of version ${VERSION}", "draft": false, "prerelease": false}' \
             https://api.github.com/repos/${{ github.repository }}/releases
 
       # - name: Install external Python dependencies
