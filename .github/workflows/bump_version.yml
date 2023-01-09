@@ -42,7 +42,7 @@ jobs:
 
           ## Getting version info from Git Tag
           HASH=$(git rev-parse HEAD)
-          git tag -l ${MAJOR_MINOR_VERSION}.*
+          git tag
           VERSION_GIT_TAG=$(git tag -l ${MAJOR_MINOR_VERSION}.*)
           echo "version found in github ${VERSION_GIT_TAG}"
           if [ -z "${VERSION_GIT_TAG}" ]; then
