@@ -47,8 +47,8 @@ jobs:
 
           ## Getting version info from Git Tag
           HASH=$(git rev-parse HEAD)
-          VERSION_GIT_TAG=$(git tag -l ${MAJOR_MINOR_VERSION}.*)
-          if [ -z "${VERSION_GIT_TAG}" ]; then
+          VERSION_GIT_TAG=$(git describe --match ${MAJOR_MINOR_VERSION}.* 2> /dev/null)
+          if [ $? -ne 0 ]; then
               echo "Major and minor version not found in Git. Creating new version tag..."
               VERSION=${MAJOR_MINOR_VERSION}.${DEFAULT_BUILD_VERSION}
           else
