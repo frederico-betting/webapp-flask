@@ -56,14 +56,15 @@ jobs:
           fi
           echo "Setting version to ${VERSION} with hash ${HASH}"
 
-          curl --data '{"tag_name": "${VERSION}",
+          curl --silent --request POST \
+            --header 'Authorization: token ${BOT_TOKEN}' \
+            --data '{"tag_name": "${VERSION}",
                           "target_commitish": "master",
                           "name": "${VERSION}",
                           "body": "Release of version ${VERSION}",
                           "draft": false,
                           "prerelease": false}' \
-              --request POST \
-              https://api.github.com/repos/${{ github.repository }}/releases?access_token=$BOT_TOKEN
+            https://api.github.com/repos/${{ github.repository }}/releases
 
       # - name: Install external Python dependencies
       #   shell: bash
