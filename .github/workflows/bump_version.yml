@@ -10,7 +10,7 @@ jobs:
     name: Bumping version
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Set up Python
         uses: actions/setup-python@v1
@@ -50,13 +50,13 @@ jobs:
           VERSION_GIT_TAG=$(git tag -l ${MAJOR_MINOR_VERSION}.*)
           if [ -z "${VERSION_GIT_TAG}" ]; then
               echo "Major and minor version not found in Git. Creating new version tag..."
-              export VERSION=${MAJOR_MINOR_VERSION}.${DEFAULT_BUILD_VERSION}
+              VERSION=${MAJOR_MINOR_VERSION}.${DEFAULT_BUILD_VERSION}
           else
               echo "Version found in Git: ${VERSION_GIT_TAG}"
               re="[0-9]+\.[0-9]+\.([0-9]+)"
               [[ $VERSION_GIT_TAG =~ $re ]]
               BUILD=$((BASH_REMATCH[1]+1))
-              export VERSION=${MAJOR_MINOR_VERSION}.${BUILD}
+              VERSION=${MAJOR_MINOR_VERSION}.${BUILD}
           fi
           echo "Setting version to ${VERSION} with hash ${HASH}"
 
@@ -68,13 +68,16 @@ jobs:
             https://api.github.com/repos/${{ github.repository }}/releases
 
       - name: Retrieve python-package-server
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           name: ${{ github.repository_owner }}/python-package-server
 
       - name: Publish new library version
         shell: bash {0}
         run: |
+          ls -lh
+          ls -ls ../
+
           cd ../python-package-server/
           echo "make bump app=samplenotedata version=${VERSION} protocol=ssh org=${{ github.repository_owner }} repo=${{ github.event.repository.name }}"
       # - name: Install external Python dependencies
