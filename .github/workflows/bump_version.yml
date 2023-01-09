@@ -56,6 +56,7 @@ jobs:
           fi
           echo "Setting version to ${VERSION} with hash ${HASH}"
           echo ${{ github.repository }}
+          echo ${BOT_TOKEN}
           curl --silent --request POST \
             --header "Accept: application/vnd.github+json" \
             --header 'Authorization: Bearer ${BOT_TOKEN}' \
