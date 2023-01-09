@@ -22,6 +22,7 @@ jobs:
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
+          git fetch --prune --unshallow --tags
           DEFAULT_MAJOR_MINOR_VERSION=0.0
           DEFAULT_BUILD_VERSION=0
 
@@ -42,7 +43,6 @@ jobs:
 
           ## Getting version info from Git Tag
           HASH=$(git rev-parse HEAD)
-          git tag
           VERSION_GIT_TAG=$(git tag -l ${MAJOR_MINOR_VERSION}.*)
           echo "version found in github ${VERSION_GIT_TAG}"
           if [ -z "${VERSION_GIT_TAG}" ]; then
