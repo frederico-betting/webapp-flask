@@ -2,6 +2,8 @@ name: Version Tag
 on:
   push:
     branches: [ master ]
+  pull_request:
+    branches: [ master ]
 
 jobs:
   bump_version:
@@ -68,7 +70,7 @@ jobs:
       - name: Retrieve python-package-server
         uses: actions/checkout@v3
         with:
-          name: ${{ github.repository_owner }}/python-package-server
+          repository: ${{ github.repository_owner }}/python-package-server
 
       - name: Publish new library version
         shell: bash {0}
@@ -78,26 +80,3 @@ jobs:
 
           cd ../python-package-server/
           echo "make bump app=samplenotedata version=${VERSION} protocol=ssh org=${{ github.repository_owner }} repo=${{ github.event.repository.name }}"
-      # - name: Install external Python dependencies
-      #   shell: bash
-      #   run: |
-      #     python -m pip install --upgrade wheel
-      #     python -m pip install --upgrade setuptools
-      #     python -m pip install --upgrade pip
-      #     python -m pip install -r requirements.dev.txt
-
-      # - name: Run unit tests
-      #   shell: bash
-      #   run: |
-      #     python -m pytest --import-mode=append tests/
-
-      # - name: Build coverage report
-      #   shell: bash
-      #   run: |
-      #     coverage run -m pytest
-
-      # - name: pytest-coverage-commentator
-      #   uses: coroo/pytest-coverage-commentator@v1.0.2
-      #   with:
-      #     pytest-coverage: .coverage
-
