@@ -9,16 +9,18 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
+        name: Clone repository
 
       - name: Set up Python
         uses: actions/setup-python@v1
         with:
           python-version: 3.10.9
 
-      - name: Update tags
+      - name: Update local repository (Git)
         shell: bash
         run: |
           git fetch --prune --unshallow --tags
+          git checkout -b version origin/master
 
       - name: Generate new version
         shell: bash {0}
@@ -57,47 +59,51 @@ jobs:
               VERSION=${MAJOR_MINOR_VERSION}.${DEFAULT_BUILD_VERSION}
           fi
           echo "Setting version to ${VERSION} with hash ${HASH}"
+          echo "MAJOR_MINOR_VERSION=$MAJOR_MINOR_VERSION" >> $GITHUB_ENV
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
 
+      - name: Update version file
+        shell: bash {0}
+        env:
+          VERSION: ${{ env.VERSION }}
+        run: |
+          echo ${VERSION} > version.txt
+
+      - name: Push to release branch (version)
+        shell: bash {0}
+        env:
+          MAJOR_MINOR_VERSION: ${{ env.MAJOR_MINOR_VERSION }}
+          VERSION: ${{ env.VERSION }}
+        run: |
+          git config --global user.name 'Frederico Betting'
+          git config --global user.email 'frederico-betting@users.noreply.github.com'
+          git commit -am "Update version.txt file (version: ${VERSION})"
+          git push origin version:${MAJOR_MINOR_VERSION} -f
+
+      - name: Publish Release and Tag
+        shell: bash {0}
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          MAJOR_MINOR_VERSION: ${{ env.MAJOR_MINOR_VERSION }}
+          VERSION: ${{ env.VERSION }}
+        run: |
+          HASH_MASTER=$(git rev-parse origin/master)
           curl --silent --request POST \
             --header "Accept: application/vnd.github+json" \
             --header "Authorization: Bearer ${BOT_TOKEN}" \
             --header "X-GitHub-Api-Version: 2022-11-28" \
-            --data "{\"tag_name\": \"${VERSION}\", \"target_commitish\": \"master\", \"name\": \"${VERSION}\", \"body\": \"Release of version ${VERSION}\", \"draft\": false, \"prerelease\": false}" \
+            --data "{\"tag_name\": \"${VERSION}\", \"target_commitish\": \"${MAJOR_MINOR_VERSION}\", \"name\": \"${VERSION}\", \"body\": \"Release of version ${VERSION}. SHA-1 master: ${HASH_MASTER}\", \"draft\": false, \"prerelease\": false}" \
             https://api.github.com/repos/${{ github.repository }}/releases
 
-      - name: Retrieve python-package-server
-        uses: actions/checkout@v3
-        with:
-          name: ${{ github.repository_owner }}/python-package-server
-
-      - name: Publish new library version
-        shell: bash {0}
-        run: |
-          ls -lh
-          ls -ls ../
-
-          cd ../python-package-server/
-          echo "make bump app=samplenotedata version=${VERSION} protocol=ssh org=${{ github.repository_owner }} repo=${{ github.event.repository.name }}"
-      # - name: Install external Python dependencies
-      #   shell: bash
-      #   run: |
-      #     python -m pip install --upgrade wheel
-      #     python -m pip install --upgrade setuptools
-      #     python -m pip install --upgrade pip
-      #     python -m pip install -r requirements.dev.txt
-
-      # - name: Run unit tests
-      #   shell: bash
-      #   run: |
-      #     python -m pytest --import-mode=append tests/
-
-      # - name: Build coverage report
-      #   shell: bash
-      #   run: |
-      #     coverage run -m pytest
-
-      # - name: pytest-coverage-commentator
-      #   uses: coroo/pytest-coverage-commentator@v1.0.2
+      # - name: Clone repository 'python-package-server'
+      #   uses: actions/checkout@v3
       #   with:
-      #     pytest-coverage: .coverage
+      #     repository: ${{ github.repository_owner }}/python-package-server
 
+      # - name: Publish new library version in python-package-server
+      #   shell: bash {0}
+      #   env:
+      #     VERSION: ${{ env.VERSION }}
+      #   run: |
+      #     make install
+      #     make bump app=samplenotedata version=${VERSION} protocol=ssh org=${{ github.repository_owner }} repo=${{ github.event.repository.name }}
