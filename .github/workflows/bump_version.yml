@@ -18,10 +18,11 @@ jobs:
         with:
           python-version: 3.10.9
 
-      - name: Update tags from Git
+      - name: Update local repository (Git)
         shell: bash
         run: |
           git fetch --prune --unshallow --tags
+          git checkout -b version origin/master
 
       - name: Generate new version
         shell: bash {0}
@@ -79,7 +80,7 @@ jobs:
           git config --global user.name 'Frederico Betting'
           git config --global user.email 'frederico-betting@users.noreply.github.com'
           git commit -am "Update version.txt file (version: ${VERSION})"
-          git push master:${MAJOR_MINOR_VERSION} -f
+          git push version:${MAJOR_MINOR_VERSION} -f
 
       - name: Publish Release and Tag
         shell: bash {0}
