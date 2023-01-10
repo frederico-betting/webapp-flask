@@ -70,7 +70,8 @@ jobs:
       - name: Retrieve python-package-server
         uses: actions/checkout@v3
         with:
-          repository: ${{ github.repository_owner }}/python-package-server
+          repository: SampleNote/python-package-server
+          # repository: ${{ github.repository_owner }}/python-package-server
 
       - name: Publish new library version
         shell: bash {0}
