@@ -46,7 +46,7 @@ jobs:
           ## Getting version info from Git Tag
           HASH=$(git rev-parse HEAD)
           VERSION_GIT_TAG=$(git tag | sort -V | tail -1 2> /dev/null)
-          if [[ $VERSION_GIT_TAG =~ $re ]]; then
+          if [[ $VERSION_GIT_TAG =~ $re ]] && [[ $VERSION_GIT_TAG =~ ${MAJOR_MINOR_VERSION}.* ]]; then
               echo "Version found in Git: ${VERSION_GIT_TAG}"
               re="[0-9]+\.[0-9]+\.([0-9]+)"
               [[ $VERSION_GIT_TAG =~ $re ]]
