@@ -74,15 +74,13 @@ jobs:
       - name: Push to release branch (version)
         shell: bash {0}
         env:
-          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           MAJOR_MINOR_VERSION: ${{ env.MAJOR_MINOR_VERSION }}
           VERSION: ${{ env.VERSION }}
         run: |
           git config --global user.name 'Frederico Betting'
           git config --global user.email 'frederico-betting@users.noreply.github.com'
-          git remote set-url origin https://x-access-token:${BOT_TOKEN}@github.com/$GITHUB_REPOSITORY
           git commit -am "Update version.txt file (version: ${VERSION})"
-          git push version:${MAJOR_MINOR_VERSION} -f
+          git push origin version:${MAJOR_MINOR_VERSION} -f
 
       - name: Publish Release and Tag
         shell: bash {0}
