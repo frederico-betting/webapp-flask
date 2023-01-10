@@ -11,13 +11,14 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
+        name: Clone repository
 
       - name: Set up Python
         uses: actions/setup-python@v1
         with:
           python-version: 3.10.9
 
-      - name: Update tags
+      - name: Update tags from Git
         shell: bash
         run: |
           git fetch --prune --unshallow --tags
@@ -59,6 +60,7 @@ jobs:
               VERSION=${MAJOR_MINOR_VERSION}.${DEFAULT_BUILD_VERSION}
           fi
           echo "Setting version to ${VERSION} with hash ${HASH}"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
 
           curl --silent --request POST \
             --header "Accept: application/vnd.github+json" \
@@ -67,17 +69,16 @@ jobs:
             --data "{\"tag_name\": \"${VERSION}\", \"target_commitish\": \"master\", \"name\": \"${VERSION}\", \"body\": \"Release of version ${VERSION}\", \"draft\": false, \"prerelease\": false}" \
             https://api.github.com/repos/${{ github.repository }}/releases
 
-      - name: Retrieve python-package-server
+      - name: Clone repository 'python-package-server'
         uses: actions/checkout@v3
         with:
           repository: SampleNote/python-package-server
           # repository: ${{ github.repository_owner }}/python-package-server
 
-      - name: Publish new library version
+      - name: Publish new library version in python-package-server
         shell: bash {0}
+        env:
+          VERSION: ${{ env.VERSION }}
         run: |
-          ls -lh
-          ls -ls ../
-
-          cd ../python-package-server/
+          make install
           echo "make bump app=samplenotedata version=${VERSION} protocol=ssh org=${{ github.repository_owner }} repo=${{ github.event.repository.name }}"
