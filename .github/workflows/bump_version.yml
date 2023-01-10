@@ -2,8 +2,6 @@ name: Version Tag
 on:
   push:
     branches: [ master ]
-  pull_request:
-    branches: [ master ]
 
 jobs:
   bump_version:
