@@ -89,11 +89,12 @@ jobs:
           MAJOR_MINOR_VERSION: ${{ env.MAJOR_MINOR_VERSION }}
           VERSION: ${{ env.VERSION }}
         run: |
+          HASH_MASTER=$(git rev-parse origin/master)
           curl --silent --request POST \
             --header "Accept: application/vnd.github+json" \
             --header "Authorization: Bearer ${BOT_TOKEN}" \
             --header "X-GitHub-Api-Version: 2022-11-28" \
-            --data "{\"tag_name\": \"${VERSION}\", \"target_commitish\": \"${MAJOR_MINOR_VERSION}\", \"name\": \"${VERSION}\", \"body\": \"Release of version ${VERSION}\", \"draft\": false, \"prerelease\": false}" \
+            --data "{\"tag_name\": \"${VERSION}\", \"target_commitish\": \"${MAJOR_MINOR_VERSION}\", \"name\": \"${VERSION}\", \"body\": \"Release of version ${VERSION}. SHA-1 master: ${HASH_MASTER}\", \"draft\": false, \"prerelease\": false}" \
             https://api.github.com/repos/${{ github.repository }}/releases
 
       # - name: Clone repository 'python-package-server'
