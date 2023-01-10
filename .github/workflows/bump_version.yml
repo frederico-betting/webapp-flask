@@ -1,0 +1,105 @@
+name: Version Tag
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  bump_version:
+    name: Bumping version
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.10.9
+
+      - name: Update tags
+        shell: bash
+        run: |
+          git fetch --prune --unshallow --tags
+
+      - name: Generate new version
+        shell: bash {0}
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+        run: |
+          DEFAULT_MAJOR_MINOR_VERSION=0.0
+          DEFAULT_BUILD_VERSION=0
+
+          CURRENT_VERSION_REPO=$(cat version.txt 2> /dev/null)
+          if [ $? -ne 0 ]; then
+              echo "File 'version.txt' not found."
+          fi
+
+          ## Getting version info from branch
+          # RegEx to identify major and minor version from the version file.
+          re="([0-9]+\.[0-9]+).*"
+          if [[ $CURRENT_VERSION_REPO =~ $re ]]; then
+              MAJOR_MINOR_VERSION=${BASH_REMATCH[1]}
+          else
+              MAJOR_MINOR_VERSION=${DEFAULT_MAJOR_MINOR_VERSION}
+          fi
+          echo "Current major and minor version: ${MAJOR_MINOR_VERSION}"
+
+          ## Getting version info from Git Tag
+          HASH=$(git rev-parse HEAD)
+          VERSION_GIT_TAG=$(git describe --tags --match ${MAJOR_MINOR_VERSION}.* 2> /dev/null)
+          if [ $? -ne 0 ]; then
+              echo "Major and minor version not found in Git. Creating new version tag..."
+              VERSION=${MAJOR_MINOR_VERSION}.${DEFAULT_BUILD_VERSION}
+          else
+              echo "Version found in Git: ${VERSION_GIT_TAG}"
+              re="[0-9]+\.[0-9]+\.([0-9]+)"
+              [[ $VERSION_GIT_TAG =~ $re ]]
+              BUILD=$((BASH_REMATCH[1]+1))
+              VERSION=${MAJOR_MINOR_VERSION}.${BUILD}
+          fi
+          echo "Setting version to ${VERSION} with hash ${HASH}"
+
+          curl --silent --request POST \
+            --header "Accept: application/vnd.github+json" \
+            --header "Authorization: Bearer ${BOT_TOKEN}" \
+            --header "X-GitHub-Api-Version: 2022-11-28" \
+            --data "{\"tag_name\": \"${VERSION}\", \"target_commitish\": \"master\", \"name\": \"${VERSION}\", \"body\": \"Release of version ${VERSION}\", \"draft\": false, \"prerelease\": false}" \
+            https://api.github.com/repos/${{ github.repository }}/releases
+
+      - name: Retrieve python-package-server
+        uses: actions/checkout@v3
+        with:
+          name: ${{ github.repository_owner }}/python-package-server
+
+      - name: Publish new library version
+        shell: bash {0}
+        run: |
+          ls -lh
+          ls -ls ../
+
+          cd ../python-package-server/
+          echo "make bump app=samplenotedata version=${VERSION} protocol=ssh org=${{ github.repository_owner }} repo=${{ github.event.repository.name }}"
+      # - name: Install external Python dependencies
+      #   shell: bash
+      #   run: |
+      #     python -m pip install --upgrade wheel
+      #     python -m pip install --upgrade setuptools
+      #     python -m pip install --upgrade pip
+      #     python -m pip install -r requirements.dev.txt
+
+      # - name: Run unit tests
+      #   shell: bash
+      #   run: |
+      #     python -m pytest --import-mode=append tests/
+
+      # - name: Build coverage report
+      #   shell: bash
+      #   run: |
+      #     coverage run -m pytest
+
+      # - name: pytest-coverage-commentator
+      #   uses: coroo/pytest-coverage-commentator@v1.0.2
+      #   with:
+      #     pytest-coverage: .coverage
+
